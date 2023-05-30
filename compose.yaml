@@ -2,6 +2,7 @@ version: '3'
 services:
   nodejs:
     environment:
+      JWT_SECRET: 30c7287179d8926db89c506cad407c38f7335ff7370b22236f26b43d67a61694
       MYSQL_DATABASE: iberent
       MYSQL_USER: iberent
       MYSQL_PASSWORD: iberent

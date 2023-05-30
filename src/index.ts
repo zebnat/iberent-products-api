@@ -1,39 +1,48 @@
 import { AppDataSource } from './data-source'
-import { User } from './typeorm-entities/User'
+import { User as UserTypeorm } from './typeorm-entities/User'
 import * as express from 'express'
-import * as bodyParser from 'body-parser'
-import * as bcrypt from 'bcrypt'
+import { UserRepositoryTypeormAdapter } from './libs/user/infrastructure/user.repository.typeorm-adapter'
+import { UserCreatorUseCase } from './libs/user/application/user.creator.use-case'
+import { UserAuthenticatorUseCase } from './libs/user/application/user.authenticator.use-case'
+import { authenticateToken } from './libs/utils/jwt-middleware'
 
-const saltRounds = 10
-const adminPassword = 'admin' // hardcoded for simplicity (should be registered manually from an interface)
-function encryptPassword() {
-  return new Promise((resolve, reject) => {})
-}
+const API_ADMIN_USERNAME = 'admin'
+const API_ADMIN_PASSWORD = 'admin' // hardcoded for simplicity (registered through useCase with an encrypted password using bcrypt)
+
+const PORT = 3000
+const app = express()
+app.use(express.json())
+
+// Services
+const userTypeormEngine = new UserRepositoryTypeormAdapter(
+  AppDataSource.getRepository(UserTypeorm),
+)
+
+const userCreator = new UserCreatorUseCase(userTypeormEngine) // Creates admin user (required for authentication and tokens)
+const authenticator = new UserAuthenticatorUseCase(userTypeormEngine)
 
 AppDataSource.initialize()
   .then(async () => {
-    console.log('Insert api admin once')
-    const user = new User()
-    user.username = 'admin'
-    user.password = 'admin' // should be salted and encrypted (bcrypt)
+    // orm data is ready
 
-    try {
-      await AppDataSource.manager.save(user)
-      console.log('Saved a new user with id: ' + user.id)
-    } catch (e) {}
+    await userCreator.execute({
+      name: API_ADMIN_USERNAME,
+      password: API_ADMIN_PASSWORD,
+    })
 
-    console.log('Loading users from the database!')
-    const users = await AppDataSource.manager.find(User)
-    console.log('Loaded users: ', users)
+    // authenticated hello world, requires access token like the rest of HTTP routes
+    app.get('/hello', authenticateToken, function (req, res) {
+      res.send('Hello world')
+    })
 
-    const PORT = 3000
-    const app = express()
-
-    app.use(bodyParser.urlencoded({ extended: true }))
-    app.use(bodyParser.json())
-
-    app.get('/auth', function (req, res) {
-      res.send('Hello worl!')
+    // this simple post request gets you a token! 
+    app.post('/auth', async (req, res) => {
+      const { name, password } = req.body
+      const response = await authenticator.execute({
+        name: name,
+        password: password,
+      })
+      res.send(response)
     })
 
     app.listen(PORT, () => {

@@ -77,14 +77,17 @@ describe('UserRepositoryTypeormAdapter', () => {
       })
     })
 
-    describe('getByNameAndPassword', () => {
+    describe('getByName', () => {
       it('should return an user domain entity without any issues', async () => {
+        const mockedUserName = 'admin'
+        const mockedPassword = 'gt498yn9yvy4t3'
+
         const mockOrm = {
           findOneByOrFail: jest.fn().mockImplementation(() => {
             return {
               id: 421432,
-              username: 'admin',
-              password: 'admin',
+              username: mockedUserName,
+              password: mockedPassword,
             } as UserTypeorm
           }),
         }
@@ -92,13 +95,11 @@ describe('UserRepositoryTypeormAdapter', () => {
         const adapter = new UserRepositoryTypeormAdapter(
           mockOrm as unknown as Repository<UserTypeorm>,
         )
-        const userDomain = await adapter.getByNameAndPassword('admin', 'admin')
+        const userDomain = await adapter.getByName('admin')
 
-        expect(userDomain.name).toEqual('admin')
-        expect(userDomain.password).toEqual('admin')
-        expect(
-          adapter.getByNameAndPassword('admin', 'admin'),
-        ).resolves.not.toThrow()
+        expect(userDomain.name).toEqual(mockedUserName)
+        expect(userDomain.password).toEqual(mockedPassword)
+        expect(adapter.getByName('admin')).resolves.not.toThrow()
       })
 
       it('should reject when orm rejects', () => {
@@ -114,9 +115,9 @@ describe('UserRepositoryTypeormAdapter', () => {
           mockOrm as unknown as Repository<UserTypeorm>,
         )
 
-        expect(
-          adapter.getByNameAndPassword('fewrfwerf', 'adefdfemin'),
-        ).rejects.toThrowError(expectedError)
+        expect(adapter.getByName('fewrfwerf')).rejects.toThrowError(
+          expectedError,
+        )
       })
     })
   })

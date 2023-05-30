@@ -6,15 +6,13 @@ import { Repository } from 'typeorm'
 export class UserRepositoryTypeormAdapter implements UserRepository {
   constructor(private orm: Repository<UserTypeormEntity>) {}
 
-  getByNameAndPassword(name: string, password: string): Promise<User> {
+  getByName(name: string): Promise<User> {
     return new Promise(async (resolve, reject) => {
       try {
         const userTypeorm = await this.orm.findOneByOrFail({
           username: name,
-          password: password,
         })
 
-        console.log(userTypeorm)
         resolve({
           id: userTypeorm.id,
           name: userTypeorm.username,

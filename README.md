@@ -30,7 +30,15 @@ Uses Clean Architecture with UseCases, which mean we have 4 abstraction layers (
 
 ## For development and node server reload
 
-1. Install dependencies `npm install`
-2. `npm start`
+1. docker compose up compose.yaml
+2. Install dependencies `npm install`
+3. `npm start`
 
 Docker node server will restart every time you change files
+
+
+## For produdtion
+
+1. docker compose up docker_compose.yaml
+
+Wait until both containers are ready

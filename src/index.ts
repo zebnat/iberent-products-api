@@ -1,11 +1,10 @@
 import { AppDataSource } from './data-source'
-import { User as UserTypeorm } from './typeorm-entities/User'
 import * as express from 'express'
-import { UserRepositoryTypeormAdapter } from './libs/user/infrastructure/user.repository.typeorm-adapter'
-import { UserCreatorUseCase } from './libs/user/application/user.creator.use-case'
-import { UserAuthenticatorUseCase } from './libs/user/application/user.authenticator.use-case'
-import { authenticateToken } from './libs/utils/jwt-middleware'
 import { productRouter } from './libs/product/presentation/product.router'
+import { userRouter } from './libs/user/presentation/user.router'
+import { UserService } from './libs/user/user.service'
+import { UserRepositoryTypeormAdapter } from './libs/user/infrastructure/user.repository.typeorm-adapter'
+import { User as UserTypeorm } from './typeorm-entities/User'
 
 const API_ADMIN_USERNAME = 'admin'
 const API_ADMIN_PASSWORD = 'admin' // hardcoded for simplicity (registered through useCase with an encrypted password using bcrypt)
@@ -14,39 +13,17 @@ const PORT = 3000
 const app = express()
 app.use(express.json())
 
-// Services
-const userTypeormEngine = new UserRepositoryTypeormAdapter(
-  AppDataSource.getRepository(UserTypeorm),
-)
-
-const userCreator = new UserCreatorUseCase(userTypeormEngine) // Creates admin user (required for authentication and tokens)
-const authenticator = new UserAuthenticatorUseCase(userTypeormEngine)
-
 AppDataSource.initialize()
   .then(async () => {
     // orm data is ready
+    const userService = UserService.initialize(
+      new UserRepositoryTypeormAdapter(
+        AppDataSource.getRepository(UserTypeorm),
+      ),
+    )
+    userService.createAdminUser(API_ADMIN_USERNAME, API_ADMIN_PASSWORD)
 
-    await userCreator.execute({
-      name: API_ADMIN_USERNAME,
-      password: API_ADMIN_PASSWORD,
-    })
-
-    // authenticated hello world, requires access token like the rest of HTTP routes
-    app.get('/hello', authenticateToken, function (req, res) {
-      res.send('Hello world')
-    })
-
-    // this simple post request gets you a token!
-    app.post('/auth', async (req, res) => {
-      const { name, password } = req.body
-      const response = await authenticator.execute({
-        name: name,
-        password: password,
-      })
-      res.send(response)
-    })
-
-    app.use([productRouter]) // all product routes
+    app.use([productRouter, userRouter]) // all product routes
 
     app.listen(PORT, () => {
       console.log(`Example app listening on port ${PORT}`)

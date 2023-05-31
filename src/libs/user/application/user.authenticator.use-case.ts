@@ -8,7 +8,6 @@ export interface UserAuthenticatorUseCaseRequest {
 }
 
 export interface UserAuthenticatorUseCaseResponse {
-  status: string
   token: string
 }
 
@@ -18,21 +17,16 @@ export class UserAuthenticatorUseCase {
   public async execute(
     request: UserAuthenticatorUseCaseRequest,
   ): Promise<UserAuthenticatorUseCaseResponse> {
-    try {
-      const user = await this.userRepository.getByName(request.name)
-      this.validatePassword(request.password, user.password)
+    const user = await this.userRepository.getByName(request.name)
 
-      const token = this.generateJWT({ id: user.id })
-      const response: UserAuthenticatorUseCaseResponse = {
-        status: 'success',
-        token: token,
-      }
+    await this.validatePassword(request.password, user.password)
 
-      return response
-    } catch (err) {
-      console.error('problem with authentication')
-      console.error(err)
+    const token = this.generateJWT({ id: user.id })
+    const response: UserAuthenticatorUseCaseResponse = {
+      token: token,
     }
+
+    return response
   }
 
   private async validatePassword(
@@ -47,7 +41,7 @@ export class UserAuthenticatorUseCase {
           if (result) {
             resolve(true)
           } else {
-            reject('invalid password')
+            reject(new Error('invalid password'))
           }
         }
       })

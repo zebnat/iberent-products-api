@@ -10,4 +10,4 @@ RUN npm run build
 
 RUN npm install -g nodemon
 
-CMD ["nodemon", "--legacy-watch", "build/src/index.js"]
+CMD ["bash", "boot_node.sh"]

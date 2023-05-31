@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { AppDataSource } from './data-source'
 import * as express from 'express'
 import { productRouter } from './libs/product/presentation/product.router'

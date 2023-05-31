@@ -37,7 +37,7 @@ Uses Clean Architecture with UseCases, which mean we have 4 abstraction layers (
 Docker node server will restart every time you change files
 
 
-## For produdtion
+## For production
 
 1. docker compose up docker_compose.yaml
 

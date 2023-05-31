@@ -39,11 +39,8 @@ export class UserCreatorUseCase {
     return new Promise((resolve, reject) => {
       bcrypt.genSalt(saltRounds, (err, salt) => {
         bcrypt.hash(password, salt, (err, hash: string) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(hash)
-          }
+          if (err) reject(err)
+          resolve(hash)
         })
       })
     })

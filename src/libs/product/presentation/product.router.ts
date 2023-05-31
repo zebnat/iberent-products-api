@@ -5,7 +5,7 @@ import { ProductService } from '../application/product.service'
 
 const productRouter = express.Router()
 
-const productController = new ProductController(new ProductService())
+const productController = new ProductController(ProductService.initialize())
 
 const handleErrorStatus = (err: Error) => {
   let statusCode = 500

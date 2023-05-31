@@ -3,7 +3,7 @@ import { AppDataSource } from '../../../data-source'
 import { ProductRepositoryTypeormAdapter } from '../infrastructure/product.repository.typeorm-adapter'
 import { Product as ProductTypeorm } from '../../../typeorm-entities/Product'
 import { createProductDTO } from './create.product.dto'
-import { Product } from '../domain'
+import { Product, ProductRepository } from '../domain'
 import { ProductDeletorUseCase } from './use-cases/product.deletor.use-case'
 import { DeleteProductDTO } from './delete.product.dto'
 import { ProductFindoneUseCase } from './use-cases/product.findone.use-case'
@@ -22,7 +22,14 @@ export class ProductService {
   private productFindone: ProductFindoneUseCase
   private productFetcher: ProductFetcherUseCase
 
-  constructor() {
+  private constructor(
+    adapter?: ProductRepository,
+    creator?: ProductCreatorUseCase,
+    deletor?: ProductDeletorUseCase,
+    findone?: ProductFindoneUseCase,
+    updater?: ProductUpdaterUseCase,
+    fetcher?: ProductFetcherUseCase,
+  ) {
     const productTypeormAdapter = new ProductRepositoryTypeormAdapter(
       AppDataSource.getRepository(ProductTypeorm),
     )
@@ -75,5 +82,27 @@ export class ProductService {
     }
 
     return updatedProduct
+  }
+
+  public static initialize() {
+    return new ProductService()
+  }
+
+  public static initializeWithDependencies(
+    adapter: ProductRepository,
+    creator: ProductCreatorUseCase,
+    deletor: ProductDeletorUseCase,
+    findone: ProductFindoneUseCase,
+    updater: ProductUpdaterUseCase,
+    fetcher: ProductFetcherUseCase,
+  ) {
+    return new ProductService(
+      adapter,
+      creator,
+      deletor,
+      findone,
+      updater,
+      fetcher,
+    )
   }
 }

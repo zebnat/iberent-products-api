@@ -35,15 +35,11 @@ export class UserAuthenticatorUseCase {
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       bcrypt.compare(password, hash, (err, result) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (result) {
-            resolve(true)
-          } else {
-            reject(new Error('invalid password'))
-          }
-        }
+        if (err) reject(err)
+
+        if (!result) reject(new Error('invalid password'))
+
+        resolve(true)
       })
     })
   }

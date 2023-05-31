@@ -21,7 +21,8 @@ AppDataSource.initialize()
         AppDataSource.getRepository(UserTypeorm),
       ),
     )
-    userService.createAdminUser(API_ADMIN_USERNAME, API_ADMIN_PASSWORD)
+    
+    await userService.createAdminUser(API_ADMIN_USERNAME, API_ADMIN_PASSWORD)
 
     app.use([productRouter, userRouter]) // all product routes
 

@@ -5,6 +5,7 @@ import { UserRepositoryTypeormAdapter } from './libs/user/infrastructure/user.re
 import { UserCreatorUseCase } from './libs/user/application/user.creator.use-case'
 import { UserAuthenticatorUseCase } from './libs/user/application/user.authenticator.use-case'
 import { authenticateToken } from './libs/utils/jwt-middleware'
+import { productRouter } from './libs/product/presentation/product.router'
 
 const API_ADMIN_USERNAME = 'admin'
 const API_ADMIN_PASSWORD = 'admin' // hardcoded for simplicity (registered through useCase with an encrypted password using bcrypt)
@@ -35,7 +36,7 @@ AppDataSource.initialize()
       res.send('Hello world')
     })
 
-    // this simple post request gets you a token! 
+    // this simple post request gets you a token!
     app.post('/auth', async (req, res) => {
       const { name, password } = req.body
       const response = await authenticator.execute({
@@ -44,6 +45,8 @@ AppDataSource.initialize()
       })
       res.send(response)
     })
+
+    app.use([productRouter]) // all product routes
 
     app.listen(PORT, () => {
       console.log(`Example app listening on port ${PORT}`)
